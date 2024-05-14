@@ -1,19 +1,67 @@
 #!/bin/bash
 
-export CROSS_COMPILE=$(pwd)/../PLATFORM/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/bin/aarch64-linux-android-
+DIR=`readlink -f .`
+PARENT_DIR=`readlink -f ${DIR}/..`
 
-mkdir out
+ARGS="$*"
+DEVICE_MODEL="$1"
 
-BUILD_CROSS_COMPILE=$(pwd)/../PLATFORM/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/bin/aarch64-linux-android-
-KERNEL_LLVM_BIN=$(pwd)/toolchain/llvm-arm-toolchain-ship/10.0/bin/clang
-CLANG_TRIPLE=aarch64-linux-gnu-
-KERNEL_MAKE_ENV="DTC_EXT=$(pwd)/tools/dtc CONFIG_BUILD_ARM64_DT_OVERLAY=y"
+JOBS=$(nproc --all)
+MAKE_PARAMS="-j$JOBS ARCH=arm64 O=out LLVM=1 CC=clang CLANG_TRIPLE=aarch64-linux-gnu- CROSS_COMPILE=llvm- CROSS_COMPILE_ARM32=arm-linux-gnueabi-"
 
-#export ARCH=arm64
-#make -C $(pwd) O=$(pwd)/out KCFLAGS=-mno-android a70q_eur_open_defconfig
-#make -j64 -C $(pwd) O=$(pwd)/out KCFLAGS=-mno-android
+devicecheck() {
+    if [ "$DEVICE_MODEL" == "a70q" ]; then
+        DEVICE_NAME="a70q"
+        ZIP_NAME=""$DEVICE_NAME"_KSU_"$(date +%d%m%y)""
+        DEFCONFIG=a70q_defconfig
+    elif [ "$DEVICE_MODEL" == "a70s" ]; then
+        DEVICE_NAME="a70s"
+        ZIP_NAME=""$DEVICE_NAME"_KSU_"$(date +%d%m%y)""
+        DEFCONFIG=a70q_defconfig
+    else
+        echo "- Config not found"
+        exit
+    fi
+}
 
-make -C $(pwd) O=$(pwd)/out $KERNEL_MAKE_ENV ARCH=arm64 CROSS_COMPILE=$BUILD_CROSS_COMPILE REAL_CC=$KERNEL_LLVM_BIN CLANG_TRIPLE=$CLANG_TRIPLE a70q_eur_open_defconfig
-make -j64 -C $(pwd) O=$(pwd)/out $KERNEL_MAKE_ENV ARCH=arm64 CROSS_COMPILE=$BUILD_CROSS_COMPILE REAL_CC=$KERNEL_LLVM_BIN CLANG_TRIPLE=$CLANG_TRIPLE
+toolchain() {
 
-cp out/arch/arm64/boot/Image $(pwd)/arch/arm64/boot/Image
+	CL_DIR="$PARENT_DIR/Prebuilts/los-clang"
+	GCC32_DIR="P$ARENT_DIR/Prebuilts/gcc32"
+	GCC64_DIR="$PARENT_DIR/Prebuils/gcc64"
+	BT_DIR="$PARENT_DIR/Prebuilts/build-tools"
+	GAS_DIR="$PARENT_DIR/Prebuilts/gas"
+
+	export PATH=$CL_DIR/bin:$PATH
+	export PATH=$GCC32_DIR/bin:$PATH
+	export PATH=$GCC64_DIR/bin:$PATH
+	export PATH=$BT_DIR/path/linux-x86:$PATH
+	export PATH=$GAS_DIR/linux-x86:$PATH
+}
+
+anykernel3() {
+	if [ -d $PARENT_DIR/AnyKernel3 ]; then
+		cd ../AnyKernel3 
+		git reset HEAD --hard
+		cd $DIR
+	else 
+	    git clone --branch a70 https://github.com/Vaz15k/AnyKernel3.git $PARENT_DIR/AnyKernel3
+	    cd $DIR
+	fi
+}
+
+makezipfile() {
+    cp arch/arm64/boot/Image $PARENT_DIR/AnyKernel3/
+    cd $PARENT_DIR/AnyKernel3
+    rm -rf a70*
+    zip -r9 $ZIP_NAME . -x '*.git*' '*patch*' '*ramdisk*' 'README.md' '*modules*'
+    cd $DIR
+}
+
+echo "Starting Building ..."
+devicecheck
+toolchain
+make $MAKE_PARAMS $DEFCONFIG
+make $MAKE_PARAMS
+anykernel3
+makezipfile
