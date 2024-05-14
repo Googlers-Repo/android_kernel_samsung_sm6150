@@ -5,7 +5,7 @@ on:
   pull_request:
   push:
     branches:
-      - 'squeak'
+      - 'ksu-man'
 
 jobs:
   build_squeak:
