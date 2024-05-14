@@ -25,7 +25,6 @@ devicecheck() {
 }
 
 toolchain() {
-
 	CL_DIR="$PARENT_DIR/Prebuilts/los-clang"
 	GCC32_DIR="P$ARENT_DIR/Prebuilts/gcc32"
 	GCC64_DIR="$PARENT_DIR/Prebuils/gcc64"
@@ -51,7 +50,7 @@ anykernel3() {
 }
 
 makezipfile() {
-    cp arch/arm64/boot/Image $PARENT_DIR/AnyKernel3/
+    cp out/arch/arm64/boot/Image.gz-dtb $PARENT_DIR/AnyKernel3/
     cd $PARENT_DIR/AnyKernel3
     rm -rf a70*
     zip -r9 $ZIP_NAME . -x '*.git*' '*patch*' '*ramdisk*' 'README.md' '*modules*'
