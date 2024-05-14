@@ -8,7 +8,7 @@ on:
       - 'ksu-man'
 
 jobs:
-  build_squeak:
+  build_kernel:
     runs-on: ubuntu-latest
 
     strategy:
@@ -63,7 +63,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: /home/runner/work/android_kernel_samsung_sm6150_KernelSU/files/a70*
-          name: Squeak_CI_${{ github.run_number }}
+          name: KernelSU for A70
           tag_name: ${{ github.run_number }}
           body: |
             **Release Notes - Kernel**
