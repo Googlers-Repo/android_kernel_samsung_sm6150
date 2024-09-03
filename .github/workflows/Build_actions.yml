@@ -2,10 +2,6 @@ name: Build
 
 on:
   workflow_dispatch:
-  pull_request:
-  push:
-    branches:
-      - 'ksu-man'
 
 jobs:
   build_kernel:
@@ -45,7 +41,7 @@ jobs:
       - name: Fetch AnyKernel3
         run: |
           export KERNEL_DIR="$(pwd)"
-          git clone --branch a70 https://github.com/Vaz15k/AnyKernel3.git $KERNEL_DIR/../AnyKernel3
+          git clone --branch master https://github.com/DerGoogler/AnyKernel3.git $KERNEL_DIR/../AnyKernel3
           mkdir $KERNEL_DIR/../files
 
       - name: Setup KSU
@@ -62,8 +58,8 @@ jobs:
         id: release
         uses: softprops/action-gh-release@v2
         with:
-          files: /home/runner/work/android_kernel_samsung_sm6150_KernelSU/files/a70*
-          name: KernelSU for A70
+          files: /home/runner/work/android_kernel_samsung_sm6150/files/a70*
+          name: Kernel for A70
           tag_name: ${{ github.run_number }}
           body: |
             **Release Notes - Kernel**

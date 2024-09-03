@@ -6589,4 +6589,4 @@ CONFIG_SBITMAP=y
 # CONFIG_STRING_SELFTEST is not set
 
 # KernelSU
-CONFIG_KSU=y
+# CONFIG_KSU is not set
